@@ -32,7 +32,13 @@ public class HelloServlet extends HttpServlet {
         out.println("<title>Hello, " + escapeHtml(name) + "!</title>");
         out.println("<style>");
         out.println("* { margin: 0; padding: 0; box-sizing: border-box; }");
-        out.println("body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a1a; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }");
+        out.println("body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a1a; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; padding-top: 60px; }");
+        out.println(".nav { position: fixed; top: 0; left: 0; right: 0; z-index: 10; height: 60px; background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }");
+        out.println(".nav-brand { font-size: 1.1rem; font-weight: 700; background: linear-gradient(135deg, #ffffff, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }");
+        out.println(".nav-links { display: flex; gap: 8px; list-style: none; }");
+        out.println(".nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 8px 14px; border-radius: 8px; transition: color 0.2s, background 0.2s; }");
+        out.println(".nav-links a:hover { color: #fff; background: rgba(255,255,255,0.08); }");
+        out.println(".nav-links a.active { color: #a78bfa; background: rgba(167,139,250,0.1); }");
         out.println(".bg { position: fixed; inset: 0; background: linear-gradient(135deg, #0a0a1a, #1a1040, #0d2137, #0a0a1a); background-size: 400% 400%; animation: gradientShift 12s ease infinite; z-index: 0; }");
         out.println("@keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }");
         out.println(".orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.4; z-index: 1; }");
@@ -58,6 +64,13 @@ public class HelloServlet extends HttpServlet {
         out.println(".back { margin-top: 28px; }");
         out.println("</style>");
         out.println("</head><body>");
+        out.println("<nav class='nav'>");
+        out.println("  <a class='nav-brand' href='index.html'>Demo WebApp</a>");
+        out.println("  <ul class='nav-links'>");
+        out.println("    <li><a href='index.html'>Home</a></li>");
+        out.println("    <li><a href='hello' class='active'>Hello</a></li>");
+        out.println("  </ul>");
+        out.println("</nav>");
         out.println("<div class='bg'></div>");
         out.println("<div class='orb orb-1'></div>");
         out.println("<div class='orb orb-2'></div>");
