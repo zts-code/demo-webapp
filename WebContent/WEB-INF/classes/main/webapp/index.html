@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Something Special</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    overflow: hidden;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0a0015;
+    color: #fff;
+    height: 100vh;
+    cursor: none;
+  }
+
+  canvas#bg { position: fixed; top: 0; left: 0; z-index: 0; }
+
+  .cursor-glow {
+    position: fixed;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(255,180,255,0.8) 0%, rgba(180,100,255,0.3) 40%, transparent 70%);
+    mix-blend-mode: screen;
+    transition: width 0.2s, height 0.2s;
+  }
+
+  .overlay {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .card {
+    pointer-events: all;
+    text-align: center;
+    padding: 50px 60px;
+    border-radius: 24px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    max-width: 560px;
+    animation: floatIn 1.5s ease-out;
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out;
+  }
+
+  @keyframes floatIn {
+    0%   { opacity: 0; transform: translateY(60px) scale(0.9); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .card h1 {
+    font-size: 2.6rem;
+    font-weight: 300;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #fff 0%, #e0b0ff 50%, #ffb0d0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .card .time {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 30px;
+  }
+
+  .card .compliment {
+    font-size: 1.35rem;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 30px;
+    min-height: 60px;
+    transition: opacity 0.6s;
+  }
+
+  .name-input-wrap {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .name-input-wrap input {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 14px 22px;
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    width: 240px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .name-input-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+  .name-input-wrap input:focus {
+    border-color: rgba(200,140,255,0.6);
+    box-shadow: 0 0 20px rgba(200,140,255,0.15);
+  }
+
+  .btn {
+    background: linear-gradient(135deg, #9b59b6, #e056a0);
+    border: none;
+    color: #fff;
+    padding: 14px 32px;
+    border-radius: 14px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(180,80,200,0.4);
+  }
+  .btn:active { transform: translateY(0); }
+
+  .sparkle-hint {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.3);
+    margin-top: 12px;
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 0.7; }
+  }
+
+  .hearts-container {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .floating-heart {
+    position: absolute;
+    font-size: 1.4rem;
+    animation: floatUp 4s ease-in forwards;
+    opacity: 0;
+  }
+
+  @keyframes floatUp {
+    0%   { opacity: 0; transform: translateY(0) scale(0.5) rotate(0deg); }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-100vh) scale(1.2) rotate(20deg); }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+<div class="cursor-glow" id="cursorGlow"></div>
+<div class="hearts-container" id="hearts"></div>
+
+<div class="overlay">
+  <div class="card" id="card">
+    <h1 id="title">Good evening</h1>
+    <div class="time" id="timeDisplay"></div>
+    <div class="compliment" id="compliment">Move your mouse around... the stars follow you.</div>
+    <div class="name-input-wrap">
+      <input type="text" id="nameInput" placeholder="Enter your name..." maxlength="30">
+      <button class="btn" id="goBtn">Surprise Me</button>
+    </div>
+    <div class="sparkle-hint">click anywhere for sparkles</div>
+  </div>
+</div>
+
+<script>
+/* ── Particle constellation canvas ── */
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+let W, H;
+let mouse = { x: -500, y: -500 };
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 0.4;
+    this.vy = (Math.random() - 0.5) * 0.4;
+    this.r = Math.random() * 2 + 0.5;
+    this.hue = 260 + Math.random() * 60;
+    this.alpha = Math.random() * 0.6 + 0.2;
+  }
+  update() {
+    /* gentle drift */
+    this.x += this.vx;
+    this.y += this.vy;
+
+    /* attract toward mouse */
+    const dx = mouse.x - this.x;
+    const dy = mouse.y - this.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 250) {
+      const force = (250 - dist) / 250 * 0.012;
+      this.vx += dx * force;
+      this.vy += dy * force;
+    }
+
+    /* damping */
+    this.vx *= 0.99;
+    this.vy *= 0.99;
+
+    /* wrap */
+    if (this.x < -10) this.x = W + 10;
+    if (this.x > W + 10) this.x = -10;
+    if (this.y < -10) this.y = H + 10;
+    if (this.y > H + 10) this.y = -10;
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${this.hue}, 80%, 75%, ${this.alpha})`;
+    ctx.fill();
+  }
+}
+
+const COUNT = 200;
+const particles = Array.from({ length: COUNT }, () => new Particle());
+
+function drawLines() {
+  for (let i = 0; i < COUNT; i++) {
+    for (let j = i + 1; j < COUNT; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = dx * dx + dy * dy;
+      if (dist < 12000) {
+        const alpha = (1 - dist / 12000) * 0.15;
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(200, 160, 255, ${alpha})`;
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+      }
+    }
+  }
+}
+
+/* ── Sparkle bursts on click ── */
+const sparks = [];
+class Spark {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 4 + 2;
+    this.vx = Math.cos(angle) * speed;
+    this.vy = Math.sin(angle) * speed;
+    this.life = 1;
+    this.decay = Math.random() * 0.02 + 0.015;
+    this.hue = 280 + Math.random() * 80;
+    this.r = Math.random() * 3 + 1;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vy += 0.04;
+    this.life -= this.decay;
+  }
+  draw() {
+    if (this.life <= 0) return;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r * this.life, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${this.hue}, 100%, 75%, ${this.life})`;
+    ctx.fill();
+  }
+}
+
+document.addEventListener('click', (e) => {
+  for (let i = 0; i < 35; i++) sparks.push(new Spark(e.clientX, e.clientY));
+  spawnHeart(e.clientX, e.clientY);
+});
+
+/* ── Floating hearts ── */
+const heartEmojis = ['\u2764\uFE0F', '\uD83D\uDC9C', '\uD83E\uDE77', '\uD83D\uDC96', '\u2728', '\uD83C\uDF1F'];
+function spawnHeart(x, y) {
+  const el = document.createElement('div');
+  el.className = 'floating-heart';
+  el.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+  el.style.left = (x + (Math.random() - 0.5) * 60) + 'px';
+  el.style.top = y + 'px';
+  document.getElementById('hearts').appendChild(el);
+  setTimeout(() => el.remove(), 4200);
+}
+
+/* ── Animation loop ── */
+function animate() {
+  ctx.fillStyle = 'rgba(10, 0, 21, 0.15)';
+  ctx.fillRect(0, 0, W, H);
+
+  particles.forEach(p => { p.update(); p.draw(); });
+  drawLines();
+
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    sparks[i].update();
+    sparks[i].draw();
+    if (sparks[i].life <= 0) sparks.splice(i, 1);
+  }
+
+  requestAnimationFrame(animate);
+}
+animate();
+
+/* ── Mouse tracking ── */
+const glow = document.getElementById('cursorGlow');
+document.addEventListener('mousemove', (e) => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  glow.style.left = e.clientX + 'px';
+  glow.style.top = e.clientY + 'px';
+});
+
+/* ── 3D card tilt ── */
+const card = document.getElementById('card');
+card.addEventListener('mousemove', (e) => {
+  const rect = card.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const rx = -(e.clientY - cy) / 18;
+  const ry = (e.clientX - cx) / 18;
+  card.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+});
+card.addEventListener('mouseleave', () => {
+  card.style.transform = 'perspective(800px) rotateX(0) rotateY(0)';
+});
+
+/* ── Greeting logic (calls the servlet) ── */
+const titleEl    = document.getElementById('title');
+const timeEl     = document.getElementById('timeDisplay');
+const compEl     = document.getElementById('compliment');
+const nameInput  = document.getElementById('nameInput');
+const goBtn      = document.getElementById('goBtn');
+
+function updateTime() {
+  const now = new Date();
+  const h = now.getHours();
+  let tod = 'Good evening';
+  if (h < 12) tod = 'Good morning';
+  else if (h < 17) tod = 'Good afternoon';
+  titleEl.textContent = tod;
+  timeEl.textContent = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
+updateTime();
+setInterval(updateTime, 30000);
+
+async function fetchGreeting(name) {
+  try {
+    const resp = await fetch('api/greeting?name=' + encodeURIComponent(name));
+    const data = await resp.json();
+    compEl.style.opacity = 0;
+    setTimeout(() => {
+      compEl.textContent = data.compliment;
+      compEl.style.opacity = 1;
+    }, 400);
+    /* burst of sparkles to celebrate */
+    for (let i = 0; i < 50; i++) {
+      sparks.push(new Spark(W / 2 + (Math.random() - 0.5) * 300, H / 2 + (Math.random() - 0.5) * 200));
+    }
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => spawnHeart(
+        W / 2 + (Math.random() - 0.5) * 400,
+        H / 2 + Math.random() * 100
+      ), i * 120);
+    }
+  } catch {
+    /* fallback if servlet not available */
+    const fallback = [
+      "You are absolutely wonderful!",
+      "The world shines brighter because of you!",
+      "You make every room better just by being in it!"
+    ];
+    compEl.style.opacity = 0;
+    setTimeout(() => {
+      compEl.textContent = fallback[Math.floor(Math.random() * fallback.length)];
+      compEl.style.opacity = 1;
+    }, 400);
+  }
+}
+
+goBtn.addEventListener('click', () => fetchGreeting(nameInput.value || 'Mom'));
+nameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') fetchGreeting(nameInput.value || 'Mom');
+});
+</script>
+</body>
+</html>
